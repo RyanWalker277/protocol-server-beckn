@@ -14,3 +14,13 @@ The code for both the instances of the protocol server is taken from [here](http
 
 1. Make sure that you add the status as `SUBSCRIBED` in the network role configuration.
 2. Make sure to generate and add your public keys to the beckn registry with the status of `VERIFIED` and a good enough expiry period.
+
+
+## How to run
+1. Clone this repository locally
+2. cd into client and network folders separately
+3. Make sure you are using node >= 16.
+4. Run `npm install` in both folders
+5. Run `npm run dev` in both folders
+
+Voila! You have the protocol server up and running.
