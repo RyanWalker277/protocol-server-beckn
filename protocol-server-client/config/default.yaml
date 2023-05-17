@@ -58,12 +58,15 @@ app:
         ttl : "PT10S"
       status:
         ttl: "PT10S"
+      update:
+        ttl: "PT10S"
+      track:
+        ttl: "PT10S"
       
     
     responses: 
       on_search:
         ttl: "PT10S"
-      
       on_init:
         ttl: "PT10S"
       on_select:
@@ -71,6 +74,10 @@ app:
       on_confirm:
         ttl: "PT10S"
       on_status:
+        ttl: "PT10S"
+      on_update:
+        ttl: "PT10S"
+      on_track:
         ttl: "PT10S"
   
   # Mandatory.
