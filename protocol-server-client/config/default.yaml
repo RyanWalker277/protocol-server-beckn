@@ -43,7 +43,7 @@ app:
     mode: client
     inboxQueue: "inbox"
     outboxQueue: "outbox"
-    amqpURL: "amqp://guest:guest@queue_service:5672"
+    amqpURL: "amqp://guest:guest@queue_service"
 
   # Mandatory.
   actions:

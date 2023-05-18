@@ -32,20 +32,30 @@ services:
     #   - "15672:15672"
     environment:
       AMQP_URL: "amqp://queue_service?connection_attempts=3&retry_delay=5"
-    #   RABBITMQ_DEFAULT_USER: tvast
-    #   RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_DEFAULT_USERL: guest
+      RABBITMQ_DEFAULT_PASS: guest
+  
+    healthcheck:
+        test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+        interval: 5s
+        timeout: 15s
+        retries: 1
 
   protocol-server-client:
     image: protocol-server-client
+    restart: always
     build:
       context: ./protocol-server-client
       dockerfile: ./Dockerfile
     depends_on:
-      - mongo_db
-      - redis_db
-      - queue_service
+      mongo_db:
+        condition: service_started
+      redis_db:
+        condition: service_started
+      queue_service:
+        condition: service_healthy
     ports:
-      - 5003:3056
+      - 5003:5003
     volumes:
       # Volume created for config file
       - ./protocol-server-client/config:/usr/src/app/config
@@ -54,15 +64,20 @@ services:
 
   protocol-server-network:
     image: protocol-server-network
+    restart: always
     build:
       context: ./protocol-server-network
       dockerfile: ./Dockerfile
     depends_on:
-      - mongo_db
-      - redis_db
-      - queue_service
+      mongo_db:
+        condition: service_started
+      redis_db:
+        condition: service_started
+      queue_service:
+        condition: service_healthy
+
     ports:
-      - 5002:3056
+      - 5002:5002
     volumes:
       # Volume created for config file
       - ./protocol-server-network/config:/usr/src/app/config
