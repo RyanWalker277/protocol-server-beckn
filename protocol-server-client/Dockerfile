@@ -12,6 +12,6 @@ RUN npm run build
 WORKDIR /usr/src/app
 
 RUN npm i -g pm2
-EXPOSE 3056
+EXPOSE 5003
 RUN mkdir -p /usr/src/app/logs
 CMD [ "pm2-runtime", "ecosystem.config.js" ]

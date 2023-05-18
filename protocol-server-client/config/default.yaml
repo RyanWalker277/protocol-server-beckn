@@ -4,7 +4,7 @@ server:
 
 # Mandatory.
 cache:
-  host: "127.0.0.1"
+  host: "redis_db"
   port: 6379
   ttl: "PT10M"
   # Optional. Default is 0.
@@ -12,7 +12,7 @@ cache:
 
 # Optional.
 responseCache:
-  mongoURL: "mongodb://127.0.0.1:27017/ps"
+  mongoURL: "mongodb://mongo_db:27017/ps"
   ttl: "PT10M"
 
 # Mandatory.
@@ -22,7 +22,7 @@ responseCache:
 # 3. pubSub
 client:
   synchronous: 
-    mongoURL: "mongodb://127.0.0.1:27017/ps"
+    mongoURL: "mongodb://mongo_db:27017/ps"
 
   #webhook:
   #  url: "https://beckn.free.beeceptor.com/clientURL"
@@ -43,7 +43,7 @@ app:
     mode: client
     inboxQueue: "inbox"
     outboxQueue: "outbox"
-    amqpURL: "amqp://guest:guest@127.0.0.1:5672"
+    amqpURL: "amqp://guest:guest@queue_service"
 
   # Mandatory.
   actions:
