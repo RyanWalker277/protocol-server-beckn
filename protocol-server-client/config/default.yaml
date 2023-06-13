@@ -62,6 +62,8 @@ app:
         ttl: "PT10S"
       track:
         ttl: "PT10S"
+      cancel:
+        ttl: "PT10S"
       
     
     responses: 
@@ -78,6 +80,8 @@ app:
       on_update:
         ttl: "PT10S"
       on_track:
+        ttl: "PT10S"
+      on_cancel:
         ttl: "PT10S"
   
   # Mandatory.
