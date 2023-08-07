@@ -40,25 +40,39 @@ export const makeBecknRequest = async (subscriberUrl: string, body: any, axios_c
 }
 
 export async function callNetwork(subscribers: SubscriberDetail[], body: any, axios_config: any, action: string): Promise<BecknResponse> {
+    var subscriberURL = body.context.bpp_uri
     if (subscribers.length == 0) {
-        return {
-            data: "No Subscribers found",
-            status: 500
-        }
-    }
-
-    for (let i = 0; i < subscribers.length; i++) {
-        logger.info(`Attempt Number: ${i + 1} \nAction : ${action}`);
-        logger.info(`sending request to BG / BPP: ${subscribers[i].subscriber_url}`);
+        console.log("No subscribers in BAP , ", JSON.stringify(body))
+        console.log("Instead using - ", subscriberURL)
+        // return {
+        //     data: "No Subscribers found",
+        //     status: 500
+        // }
+        
+        logger.info(`sending request to BG / BPP: ${subscriberURL}`);
         logger.info(`Request Body: ${JSON.stringify(body)}`);
 
-        const response = await makeBecknRequest(subscribers[i].subscriber_url, body, axios_config, getConfig().app.httpRetryCount, action);
+        const response = await makeBecknRequest(subscriberURL, body, axios_config, getConfig().app.httpRetryCount, action);
         if ((response.status == 200) || (response.status == 201) || (response.status == 202) || (response.status == 204)) {
-            logger.info(`Result : Request Successful \nStatus: ${response.status} \nData : ${response.data} \nSubscriber URL: ${subscribers[i].subscriber_url}`);
+            logger.info(`Result : Request Successful \nStatus: ${response.status} \nData : ${response.data} \nSubscriber URL: ${subscriberURL}`);
             return response;
         }
 
-        logger.error(`Result : Failed call to Subscriber: ${subscribers[i].subscriber_url}, \nStatus: ${response.status}, \nData: ${response.data}`);
+        logger.error(`Result : Failed call to Subscriber: ${subscriberURL}, \nStatus: ${response.status}, \nData: ${response.data}`);
+    } else {
+        for (let i = 0; i < subscribers.length; i++) {
+            logger.info(`Attempt Number: ${i + 1} \nAction : ${action}`);
+            logger.info(`sending request to BG / BPP: ${subscribers[i].subscriber_url}`);
+            logger.info(`Request Body: ${JSON.stringify(body)}`);
+    
+            const response = await makeBecknRequest(subscribers[i].subscriber_url, body, axios_config, getConfig().app.httpRetryCount, action);
+            if ((response.status == 200) || (response.status == 201) || (response.status == 202) || (response.status == 204)) {
+                logger.info(`Result : Request Successful \nStatus: ${response.status} \nData : ${response.data} \nSubscriber URL: ${subscribers[i].subscriber_url}`);
+                return response;
+            }
+    
+            logger.error(`Result : Failed call to Subscriber: ${subscribers[i].subscriber_url}, \nStatus: ${response.status}, \nData: ${response.data}`);
+        }
     }
 
     return {

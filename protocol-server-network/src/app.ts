@@ -11,10 +11,20 @@ import { ClientUtils } from "./utils/client.utils"
 import { getConfig } from "./utils/config.utils"
 import { GatewayUtils } from "./utils/gateway.utils"
 import logger from "./utils/logger.utils"
+import * as Sentry from '@sentry/node';
 
 const app = Express()
 
 app.use(Express.json())
+
+Sentry.init({
+    dsn: "https://11b27c6c778d42a396527d42a0ea5428@bugs.samagra.io/6",
+  
+    // Set tracesSampleRate to 1.0 to capture 100%
+    // of transactions for performance monitoring.
+    // We recommend adjusting this value in production
+    tracesSampleRate: 1.0,
+  });
 
 const initializeExpress=async(successCallback: Function)=>{
     const app = Express()
