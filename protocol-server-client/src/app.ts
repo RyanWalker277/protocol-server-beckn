@@ -25,8 +25,7 @@ const initializeExpress=async(successCallback: Function)=>{
 	res.locals={
                 rawBody: buf.toString()
             }
-        },
-        limit: "50mb"    
+        }
     }))
 
     // Request Logger.
