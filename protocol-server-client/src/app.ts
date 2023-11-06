@@ -25,7 +25,8 @@ const initializeExpress=async(successCallback: Function)=>{
 	res.locals={
                 rawBody: buf.toString()
             }
-        }    
+        },
+        limit: "50mb"    
     }))
 
     // Request Logger.
@@ -45,6 +46,10 @@ const initializeExpress=async(successCallback: Function)=>{
     // Response Routing.
     const {responsesRouter} = require('./routes/responses.routes');
     app.use('/', responsesRouter);
+
+    // Logs Routing.
+    const logsRouter = require('./routes/logs.routes').default;
+    app.use('/logs', logsRouter);
 
     // Error Handler.
     app.use((err : any, req : Request, res : Response, next : NextFunction) => {
