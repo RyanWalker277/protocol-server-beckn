@@ -10,7 +10,7 @@ import { ResponseActions } from "../schemas/configs/actions.app.config.schema";
 import { AppMode } from "../schemas/configs/app.config.schema";
 import { GatewayMode } from "../schemas/configs/gateway.app.config.schema";
 import { getConfig } from "../utils/config.utils";
-import logger from "../utils/logger.utils";
+import logger, { setTransactionIdFromRequest } from "../utils/logger.utils";
 
 export const responsesRouter = Router();
 
@@ -19,20 +19,21 @@ if ((getConfig().app.mode === AppMode.bap) && (getConfig().app.gateway.mode === 
     const responseActions = getConfig().app.actions.responses;
     Object.keys(ResponseActions).forEach(action => {
         if (responseActions[action as ResponseActions]) {
-            responsesRouter.post(`/${action}`, jsonCompressorMiddleware, 
-            authValidatorMiddleware, openApiValidatorMiddleware, 
-            async (req: Request, res: Response, next: NextFunction) => {
-                logger.info(`response from bpp: ${JSON.stringify(req.body)}`);
-                await bapNetworkResponseHandler(req, res, next, action as ResponseActions);
-            });
+            responsesRouter.post(`/${action}`, jsonCompressorMiddleware,
+                authValidatorMiddleware, openApiValidatorMiddleware,
+                async (req: Request, res: Response, next: NextFunction) => {
+                    setTransactionIdFromRequest(req);
+                    logger.info(`response from bpp: ${JSON.stringify(req.body)}`);
+                    await bapNetworkResponseHandler(req, res, next, action as ResponseActions);
+                });
         } else {
-            responsesRouter.post(`/${action}`, async(req: Request, res: Response, next: NextFunction) => {
+            responsesRouter.post(`/${action}`, async (req: Request, res: Response, next: NextFunction) => {
+                setTransactionIdFromRequest(req);
                 await unConfigureActionHandler(req, res, next, action);
             });
         }
     });
 }
-
 // BPP Client-Side Gateway Configuration.
 if ((getConfig().app.mode === AppMode.bpp) && (getConfig().app.gateway.mode === GatewayMode.client)) {
     const responseActions = getConfig().app.actions.responses;
