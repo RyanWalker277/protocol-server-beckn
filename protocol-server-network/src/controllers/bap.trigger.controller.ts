@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { Locals } from "../interfaces/locals.interface";
 import { RequestActions } from "../schemas/configs/actions.app.config.schema";
-import logger from "../utils/logger.utils";
+import logger, { setTransactionIdFromRabbitMQ } from  "../utils/logger.utils";
 import * as AmqbLib from "amqplib";
 import { acknowledgeACK, acknowledgeNACK } from "../utils/acknowledgement.utils";
 import { BecknErrorType } from "../schemas/becknError.schema";
@@ -63,7 +63,7 @@ export const bapClientTriggerHandler = async (req: Request, res: Response<{}, Lo
 
 export const bapClientTriggerSettler = async (message: AmqbLib.ConsumeMessage | null) => {
     try {
-
+        setTransactionIdFromRabbitMQ(message);
         logger.info('Protocol Network Server (Client Settler) recieving message from outbox queue');
 
         const requestBody = JSON.parse(message?.content.toString()!);
