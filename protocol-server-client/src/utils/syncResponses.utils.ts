@@ -5,37 +5,54 @@ import { ClientConfigType } from "../schemas/configs/client.config.schema";
 import { SyncCache } from "./cache/sync.cache.utils";
 import { getConfig } from "./config.utils";
 
-export async function sendSyncResponses(res: Response, message_id:string, action: RequestActions, context: any) {
+export async function sendSyncResponses(res: Response, message_id: string, action: RequestActions, context: any) {
     try {
-        if(getConfig().client.type!=ClientConfigType.synchronous){
+        if (getConfig().client.type != ClientConfigType.synchronous) {
             throw new Exception(ExceptionType.Client_InvalidCall, "Synchronous client is not configured.", 500);
         }
 
-        const syncCache=SyncCache.getInstance();
+        const syncCache = SyncCache.getInstance();
         syncCache.initCache(message_id, action);
-        
-        const waitTime=(getConfig().app.actions.requests[action]?.ttl) ? getConfig().app.actions.requests[action]?.ttl! : 30*1000;
-        await sleep(waitTime);
-        
-        const syncCacheData=await syncCache.getData(message_id, action);
-        if(!syncCacheData){
-            throw new Exception(ExceptionType.Client_SyncCacheDataNotFound, `Sync cache data not found for message_id: ${message_id} and action: ${action}`, 404);
-        }
 
-        if(syncCacheData.error){
-            res.status(400).json({
-                context,
-                error: syncCacheData.error
-            });
-            return;
-        }
+        const waitTime = (getConfig().app.actions.requests[action]?.ttl) ? getConfig().app.actions.requests[action]?.ttl! : 30 * 1000;
+        const maxWaitTime = waitTime; // Maximum wait time
+        let elapsedTime = 0;
 
-        res.status(200).json({
-            context,
-            responses: syncCacheData.responses
-        });
+        //@ts-ignore
+        for (let i = 0; i <= maxWaitTime; i += 1000) {
+            await sleep(1000);
+            elapsedTime += 1000;
+            const syncCacheData = await syncCache.getData(message_id, action);
+            if (!syncCacheData) {
+                throw new Exception(ExceptionType.Client_SyncCacheDataNotFound, `Sync cache data not found for message_id: ${message_id} and action: ${action}`, 404);
+            }
+            if (syncCacheData.error) {
+                res.status(400).json({
+                    context,
+                    error: syncCacheData.error
+                });
+                return;
+            }
+            if (syncCacheData.responses?.length || elapsedTime >= waitTime) {
+                if (elapsedTime >= waitTime && !syncCacheData.responses?.length) {
+                    // If the maximum wait time has passed and still no data, return 408 Request Timeout
+                    res.status(408).json({
+                        context,
+                        error: "Request Timeout: Bank server didn't return any data."
+                    });
+                    return;
+                }
+
+                // If data is available or the maximum wait time has not passed, return the responses
+                res.status(200).json({
+                    context,
+                    responses: syncCacheData.responses
+                });
+                return;
+            }
+        }
     } catch (error) {
-        if(error instanceof Exception){
+        if (error instanceof Exception) {
             throw error;
         }
 
