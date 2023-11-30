@@ -15,12 +15,9 @@ export async function sendSyncResponses(res: Response, message_id: string, actio
         syncCache.initCache(message_id, action);
 
         const waitTime = getConfig().app.actions.requests[action]?.ttl || 30 * 1000;
-        const maxWaitTime = waitTime;
-        let elapsedTime = 0;
-
-        for (let i = 0; i <= maxWaitTime; i += 1000) {
+        
+        for (let i = 0; i <= waitTime; i += 1000) {
             await sleep(1000);
-            elapsedTime += 1000;
 
             const syncCacheData = await syncCache.getData(message_id, action);
             if (!syncCacheData || syncCacheData.error) {
@@ -30,8 +27,8 @@ export async function sendSyncResponses(res: Response, message_id: string, actio
                 throw new Exception(ExceptionType.Client_SyncCacheDataNotFound, errorMessage, 404);
             }
 
-            if (syncCacheData.responses?.length || elapsedTime >= waitTime) {
-                if (elapsedTime >= waitTime && !syncCacheData.responses?.length) {
+            if (syncCacheData.responses?.length || i >= waitTime) {
+                if (i >= waitTime && !syncCacheData.responses?.length) {
                     res.status(408).json({
                         context,
                         error: "Request Timeout: Bank server didn't return any data."
